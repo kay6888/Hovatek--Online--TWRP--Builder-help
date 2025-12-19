@@ -100,7 +100,9 @@ public class MainActivity extends AppCompatActivity {
                 info.append(abi).append(" ");
             }
             info.append("\n");
-            info.append("Primary ABI: ").append(Build.SUPPORTED_ABIS[0]).append("\n");
+            if (Build.SUPPORTED_ABIS.length > 0) {
+                info.append("Primary ABI: ").append(Build.SUPPORTED_ABIS[0]).append("\n");
+            }
         } else {
             info.append("CPU ABI: ").append(Build.CPU_ABI).append("\n");
             info.append("CPU ABI2: ").append(Build.CPU_ABI2).append("\n");
@@ -145,7 +147,10 @@ public class MainActivity extends AppCompatActivity {
         info.append("Android Version: ").append(Build.VERSION.RELEASE).append("\n");
         info.append("Screen Resolution: ").append(metrics.widthPixels).append("x").append(metrics.heightPixels).append("\n");
         info.append("Device Codename: ").append(Build.DEVICE).append("\n");
-        info.append("Architecture: ").append(Build.SUPPORTED_ABIS[0]).append("\n\n");
+        String primaryAbi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.SUPPORTED_ABIS.length > 0 
+            ? Build.SUPPORTED_ABIS[0] 
+            : Build.CPU_ABI;
+        info.append("Architecture: ").append(primaryAbi).append("\n\n");
         
         info.append("=== INSTRUCTIONS ===\n");
         info.append("1. Visit: https://www.hovatek.com/twrpbuilder/\n");
