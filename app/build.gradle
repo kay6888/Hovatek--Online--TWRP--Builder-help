@@ -7,21 +7,31 @@ android {
     compileSdk 34
 
     // Signing configuration for release builds
-    // IMPORTANT: To create a signed release APK:
-    // 1. Generate a keystore file using: keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
-    // 2. Place the keystore file in the app/ directory
+    // ⚠️ SECURITY WARNING ⚠️
+    // The current configuration uses the Android debug keystore for TESTING ONLY.
+    // Debug keystores are publicly known and INSECURE for production releases.
+    // 
+    // Before distributing your app:
+    // 1. Generate a keystore file using: 
+    //    keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+    // 2. Place the keystore file in a secure location (NOT in version control)
     // 3. Update the values below with your keystore information
-    // 4. For security, consider using gradle.properties or environment variables for passwords
+    // 4. For security, use gradle.properties or environment variables for passwords
+    //    Example in gradle.properties:
+    //    RELEASE_STORE_FILE=/path/to/keystore.jks
+    //    RELEASE_STORE_PASSWORD=your-password
+    //    RELEASE_KEY_ALIAS=your-alias
+    //    RELEASE_KEY_PASSWORD=your-password
     signingConfigs {
         release {
-            // Replace these placeholder values with your actual keystore details
-            // Option 1: Use a keystore file (recommended for production)
-            // storeFile file("my-release-key.jks")
-            // storePassword "your-store-password"
-            // keyAlias "my-key-alias"
-            // keyPassword "your-key-password"
+            // Production signing configuration (UNCOMMENT AND CONFIGURE FOR RELEASE):
+            // storeFile file(RELEASE_STORE_FILE)
+            // storePassword RELEASE_STORE_PASSWORD
+            // keyAlias RELEASE_KEY_ALIAS
+            // keyPassword RELEASE_KEY_PASSWORD
             
-            // Option 2: For testing, you can use the debug keystore
+            // ⚠️ TEMPORARY: Using debug keystore for testing only ⚠️
+            // DO NOT use this for production releases!
             storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"

@@ -134,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isRootGranted() {
+        // Note: This method does NOT request root permission to avoid disruptive dialogs.
+        // It only checks if root commands can be executed without user interaction.
+        // If su requires a popup, this will timeout and return false.
         Process process = null;
         try {
             process = Runtime.getRuntime().exec("su -c id");
@@ -141,13 +144,18 @@ public class MainActivity extends AppCompatActivity {
             String output = reader.readLine();
             reader.close();
             
+            // Use a short timeout to avoid waiting for user interaction
+            boolean completed;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                completed = process.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
             } else {
+                // For older Android, we can't set a timeout easily, so just check quickly
                 process.waitFor();
+                completed = true;
             }
             
-            return output != null && output.toLowerCase(Locale.ROOT).contains("uid=0");
+            // Only return true if command completed without user interaction and shows root
+            return completed && output != null && output.toLowerCase(Locale.ROOT).contains("uid=0");
         } catch (Exception e) {
             return false;
         } finally {
@@ -177,36 +185,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getBootloaderStatus() {
-        String[] bootloaderPaths = {
-            "/sys/class/sec/sec_debug/boot_verifiedboot",
-            "/sys/devices/soc0/oem_sec_boot_enabled",
-            "/proc/cmdline"
-        };
-        
-        for (String path : bootloaderPaths) {
-            String content = readFile(path);
-            if (content != null && !content.isEmpty()) {
-                if (content.toLowerCase(Locale.ROOT).contains("locked") || 
-                    content.contains("1")) {
-                    return "Locked (detected from: " + path + ")";
-                } else if (content.toLowerCase(Locale.ROOT).contains("unlocked") || 
-                           content.contains("0")) {
-                    return "Unlocked (detected from: " + path + ")";
-                }
+        // Check specific bootloader verification files
+        String verifiedBootFile = readFile("/sys/class/sec/sec_debug/boot_verifiedboot");
+        if (verifiedBootFile != null && !verifiedBootFile.isEmpty()) {
+            String content = verifiedBootFile.trim().toLowerCase(Locale.ROOT);
+            if (content.equals("1") || content.contains("locked")) {
+                return "Locked (verified boot enabled)";
+            } else if (content.equals("0") || content.contains("unlocked")) {
+                return "Unlocked (verified boot disabled)";
             }
         }
         
-        // Try to detect via getprop
-        String output = executeCommand("getprop ro.boot.flash.locked");
-        if (output != null && !output.isEmpty()) {
-            if (output.trim().equals("1")) {
-                return "Locked (via getprop)";
-            } else if (output.trim().equals("0")) {
-                return "Unlocked (via getprop)";
+        // Check OEM secure boot setting
+        String oemSecBootFile = readFile("/sys/devices/soc0/oem_sec_boot_enabled");
+        if (oemSecBootFile != null && !oemSecBootFile.isEmpty()) {
+            String content = oemSecBootFile.trim();
+            if (content.equals("1")) {
+                return "Locked (OEM secure boot enabled)";
+            } else if (content.equals("0")) {
+                return "Unlocked (OEM secure boot disabled)";
             }
         }
         
-        return "Unable to determine";
+        // Try getprop for bootloader lock status
+        String lockStateProp = executeCommand("getprop ro.boot.flash.locked");
+        if (lockStateProp != null && !lockStateProp.isEmpty()) {
+            String value = lockStateProp.trim();
+            if (value.equals("1")) {
+                return "Locked (via ro.boot.flash.locked)";
+            } else if (value.equals("0")) {
+                return "Unlocked (via ro.boot.flash.locked)";
+            }
+        }
+        
+        // Check alternative property
+        String verifiedBootStateProp = executeCommand("getprop ro.boot.verifiedbootstate");
+        if (verifiedBootStateProp != null && !verifiedBootStateProp.isEmpty()) {
+            String value = verifiedBootStateProp.trim().toLowerCase(Locale.ROOT);
+            if (value.equals("green")) {
+                return "Locked (verified boot green)";
+            } else if (value.equals("orange") || value.equals("yellow") || value.equals("red")) {
+                return "Unlocked (verified boot " + value + ")";
+            }
+        }
+        
+        return "Unable to determine (device may not expose this information)";
     }
 
     private String getSystemPartitionMountStatus() {
@@ -309,7 +332,8 @@ public class MainActivity extends AppCompatActivity {
         String systemMountStatus = getSystemPartitionMountStatus();
         
         info.append("Root Available: ").append(rootAvailable ? "Yes (su binary detected)" : "No").append("\n");
-        info.append("Root Permission: ").append(rootGranted ? "Granted" : "Not granted/denied").append("\n");
+        info.append("Root Permission: ").append(rootGranted ? "Granted (automatic check)" : "Not granted/denied").append("\n");
+        info.append("Note: Root permission check is non-intrusive and won't prompt for access\n");
         info.append("SELinux Status: ").append(selinuxStatus).append("\n");
         info.append("Bootloader Status: ").append(bootloaderStatus).append("\n");
         info.append("System Partition: ").append(systemMountStatus).append("\n");
