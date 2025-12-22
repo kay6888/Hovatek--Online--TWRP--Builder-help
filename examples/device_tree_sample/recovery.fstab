@@ -40,7 +40,8 @@
 /efs2            emmc      /dev/block/bootdevice/by-name/modemst2                                  flags=backup=1;subpartitionof=/efs1
 
 # Metadata partition (Android 10+ with metadata encryption)
-# Uncomment if your device uses metadata encryption
+# IMPORTANT: This partition is REQUIRED for Android 10+ devices using FBE with metadata encryption
+# Without this, TWRP will not be able to decrypt /data partition
 # /metadata      ext4      /dev/block/bootdevice/by-name/metadata                                  flags=display="Metadata";wrappedkey
 
 # DTBO partition (Android 9+)

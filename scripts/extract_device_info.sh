@@ -186,8 +186,12 @@ print_header "Partition Information"
     safe_exec "cat /proc/partitions"
     echo ""
     echo "Block Device Names:"
-    # Try multiple common paths
-    safe_exec "ls -la /dev/block/platform/*/by-name/ 2>/dev/null || ls -la /dev/block/bootdevice/by-name/ 2>/dev/null || echo 'Could not find by-name directory'"
+    # Try multiple common paths sequentially
+    if ! safe_exec "ls -la /dev/block/platform/*/by-name/" | grep -q "^l"; then
+        if ! safe_exec "ls -la /dev/block/bootdevice/by-name/" | grep -q "^l"; then
+            echo "Could not find by-name directory"
+        fi
+    fi
     echo ""
 } | tee -a "$OUTPUT_FILE"
 
@@ -260,7 +264,10 @@ print_header "TWRP Building Summary"
     echo "  PRODUCT_MANUFACTURER := $(get_prop ro.product.manufacturer)"
     echo ""
     echo "Screen Configuration:"
-    RESOLUTION=$(safe_exec "wm size" | grep "Physical size" | cut -d':' -f2 | tr -d ' ')
+    RESOLUTION=$(safe_exec "wm size" | grep -E "(Physical size|Override size)" | head -n1 | cut -d':' -f2 | tr -d ' ')
+    if [ -z "$RESOLUTION" ]; then
+        RESOLUTION=$(safe_exec "wm size" | tail -n1 | tr -d ' ')
+    fi
     echo "  Resolution: $RESOLUTION"
     if [[ "$RESOLUTION" == *"1080x"* ]] || [[ "$RESOLUTION" == *"x1080"* ]]; then
         echo "  Recommended TW_THEME: portrait_hdpi or landscape_hdpi"
