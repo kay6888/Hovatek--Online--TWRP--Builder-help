@@ -34,6 +34,11 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
+    private static final int MAX_DUMPSYS_LINES = 5;
+    private static final String[] TOUCH_DRIVER_VENDORS = {
+        "touch", "synaptics", "focaltech", "goodix", "atmel", "cypress", "ft", "gt", "touchscreen", "ts"
+    };
+    
     private TextView infoTextView;
     private Button collectButton;
     private Button saveButton;
@@ -331,12 +336,7 @@ public class MainActivity extends AppCompatActivity {
             String content = readFile(path);
             if (content != null && !content.isEmpty()) {
                 // Check if it looks like touch-related info
-                String lowerContent = content.toLowerCase(Locale.ROOT);
-                if (lowerContent.contains("touch") || lowerContent.contains("synaptics") || 
-                    lowerContent.contains("focaltech") || lowerContent.contains("goodix") || 
-                    lowerContent.contains("atmel") || lowerContent.contains("cypress") ||
-                    lowerContent.contains("ft") || lowerContent.contains("gt") ||
-                    lowerContent.contains("touchscreen") || lowerContent.contains("ts")) {
+                if (isTouchDriverContent(content)) {
                     touchInfo.append("Source: ").append(path).append("\n");
                     touchInfo.append(content).append("\n");
                     found = true;
@@ -352,11 +352,7 @@ public class MainActivity extends AppCompatActivity {
             boolean inTouchSection = false;
 
             for (String line : lines) {
-                String lowerLine = line.toLowerCase(Locale.ROOT);
-                if (lowerLine.contains("name=") && (lowerLine.contains("touch") || 
-                    lowerLine.contains("synaptics") || lowerLine.contains("focaltech") || 
-                    lowerLine.contains("goodix") || lowerLine.contains("atmel") || 
-                    lowerLine.contains("cypress"))) {
+                if (line.toLowerCase(Locale.ROOT).contains("name=") && isTouchDriverContent(line)) {
                     inTouchSection = true;
                     touchSection.append(line).append("\n");
                 } else if (inTouchSection) {
@@ -390,10 +386,10 @@ public class MainActivity extends AppCompatActivity {
                     touchDumpsys.append(line).append("\n");
                     lineCount = 0;
                 } else if (inTouchSection) {
-                    if (lineCount < 5 && !line.trim().isEmpty()) {
+                    if (lineCount < MAX_DUMPSYS_LINES && !line.trim().isEmpty()) {
                         touchDumpsys.append(line).append("\n");
                         lineCount++;
-                    } else if (line.trim().isEmpty() || lineCount >= 5) {
+                    } else if (line.trim().isEmpty() || lineCount >= MAX_DUMPSYS_LINES) {
                         inTouchSection = false;
                     }
                 }
@@ -407,6 +403,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return found ? touchInfo.toString() : null;
+    }
+
+    private boolean isTouchDriverContent(String content) {
+        String lowerContent = content.toLowerCase(Locale.ROOT);
+        for (String vendor : TOUCH_DRIVER_VENDORS) {
+            if (lowerContent.contains(vendor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String readFile(String path) {
