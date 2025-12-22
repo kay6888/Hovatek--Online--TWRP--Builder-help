@@ -17,12 +17,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -32,10 +34,17 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
+    private static final int MAX_DUMPSYS_LINES = 5;
+    private static final String[] TOUCH_DRIVER_VENDORS = {
+        "touch", "synaptics", "focaltech", "goodix", "atmel", "cypress", "ft", "gt", "touchscreen", "ts"
+    };
+    
     private TextView infoTextView;
     private Button collectButton;
     private Button saveButton;
+    private SearchView searchView;
     private String deviceInfo = "";
+    private String fullDeviceInfo = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
         infoTextView = findViewById(R.id.infoTextView);
         collectButton = findViewById(R.id.collectButton);
         saveButton = findViewById(R.id.saveButton);
+        searchView = findViewById(R.id.searchView);
+
+        setupSearch();
 
         collectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,6 +140,17 @@ public class MainActivity extends AppCompatActivity {
         }
         info.append("\n");
         
+        // Touch Driver Information
+        info.append("--- TOUCH DRIVER INFO ---\n");
+        String touchDriver = getTouchDriverInfo();
+        if (touchDriver != null && !touchDriver.isEmpty()) {
+            info.append(touchDriver);
+        } else {
+            info.append("Touch driver information not available.\n");
+            info.append("Note: Root access may be required to detect touch driver.\n");
+        }
+        info.append("\n");
+        
         // Build Fingerprint
         info.append("--- BUILD FINGERPRINT ---\n");
         info.append("Fingerprint: ").append(Build.FINGERPRINT).append("\n");
@@ -164,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
         info.append("Generated on: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date())).append("\n");
         
         deviceInfo = info.toString();
+        fullDeviceInfo = deviceInfo;
         infoTextView.setText(deviceInfo);
         saveButton.setEnabled(true);
         Toast.makeText(this, "Device information collected!", Toast.LENGTH_SHORT).show();
@@ -240,6 +264,201 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Error saving file: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
+        }
+    }
+
+    private void setupSearch() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterDeviceInfo(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterDeviceInfo(newText);
+                return true;
+            }
+        });
+    }
+
+    private void filterDeviceInfo(String query) {
+        if (fullDeviceInfo == null || fullDeviceInfo.isEmpty()) {
+            return;
+        }
+
+        if (query == null || query.trim().isEmpty()) {
+            // Show full device info when search is cleared
+            infoTextView.setText(fullDeviceInfo);
+            return;
+        }
+
+        // Filter lines that contain the search query (case-insensitive)
+        String[] lines = fullDeviceInfo.split("\n");
+        StringBuilder filteredInfo = new StringBuilder();
+        String lowerQuery = query.toLowerCase(Locale.ROOT);
+        boolean foundMatch = false;
+
+        for (String line : lines) {
+            if (line.toLowerCase(Locale.ROOT).contains(lowerQuery)) {
+                filteredInfo.append(line).append("\n");
+                foundMatch = true;
+            }
+        }
+
+        if (foundMatch) {
+            infoTextView.setText(filteredInfo.toString());
+        } else {
+            infoTextView.setText("No results found for: \"" + query + "\"");
+        }
+    }
+
+    private String getTouchDriverInfo() {
+        StringBuilder touchInfo = new StringBuilder();
+        boolean found = false;
+
+        // Try multiple paths to find touch driver information
+        String[] touchPaths = {
+            "/proc/touchscreen/ts_information",
+            "/sys/class/touchscreen/device/name",
+            "/sys/class/input/input0/name",
+            "/sys/class/input/input1/name",
+            "/sys/class/input/input2/name",
+            "/sys/class/input/input3/name",
+            "/sys/devices/virtual/input/input0/name",
+            "/sys/devices/virtual/input/input1/name",
+            "/sys/devices/virtual/input/input2/name",
+            "/sys/devices/virtual/input/input3/name"
+        };
+
+        for (String path : touchPaths) {
+            String content = readFile(path);
+            if (content != null && !content.isEmpty()) {
+                // Check if it looks like touch-related info
+                if (isTouchDriverContent(content)) {
+                    touchInfo.append("Source: ").append(path).append("\n");
+                    touchInfo.append(content).append("\n");
+                    found = true;
+                }
+            }
+        }
+
+        // Try /proc/bus/input/devices
+        String inputDevices = readFile("/proc/bus/input/devices");
+        if (inputDevices != null && !inputDevices.isEmpty()) {
+            String[] lines = inputDevices.split("\n");
+            StringBuilder touchSection = new StringBuilder();
+            boolean inTouchSection = false;
+
+            for (String line : lines) {
+                if (line.toLowerCase(Locale.ROOT).contains("name=") && isTouchDriverContent(line)) {
+                    inTouchSection = true;
+                    touchSection.append(line).append("\n");
+                } else if (inTouchSection) {
+                    if (line.trim().isEmpty()) {
+                        inTouchSection = false;
+                    } else {
+                        touchSection.append(line).append("\n");
+                    }
+                }
+            }
+
+            if (touchSection.length() > 0) {
+                touchInfo.append("Source: /proc/bus/input/devices\n");
+                touchInfo.append(touchSection.toString()).append("\n");
+                found = true;
+            }
+        }
+
+        // Try dumpsys input command
+        String dumpsysOutput = executeCommand("dumpsys input");
+        if (dumpsysOutput != null && !dumpsysOutput.isEmpty()) {
+            String[] lines = dumpsysOutput.split("\n");
+            StringBuilder touchDumpsys = new StringBuilder();
+            boolean inTouchSection = false;
+            int lineCount = 0;
+
+            for (String line : lines) {
+                String lowerLine = line.toLowerCase(Locale.ROOT);
+                if (lowerLine.contains("touch") && (lowerLine.contains("device") || lowerLine.contains("input"))) {
+                    inTouchSection = true;
+                    touchDumpsys.append(line).append("\n");
+                    lineCount = 0;
+                } else if (inTouchSection) {
+                    if (lineCount < MAX_DUMPSYS_LINES && !line.trim().isEmpty()) {
+                        touchDumpsys.append(line).append("\n");
+                        lineCount++;
+                    } else if (line.trim().isEmpty() || lineCount >= MAX_DUMPSYS_LINES) {
+                        inTouchSection = false;
+                    }
+                }
+            }
+
+            if (touchDumpsys.length() > 0) {
+                touchInfo.append("Source: dumpsys input\n");
+                touchInfo.append(touchDumpsys.toString()).append("\n");
+                found = true;
+            }
+        }
+
+        return found ? touchInfo.toString() : null;
+    }
+
+    private boolean isTouchDriverContent(String content) {
+        String lowerContent = content.toLowerCase(Locale.ROOT);
+        for (String vendor : TOUCH_DRIVER_VENDORS) {
+            if (lowerContent.contains(vendor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String readFile(String path) {
+        StringBuilder content = new StringBuilder();
+        try {
+            File file = new File(path);
+            if (!file.exists() || !file.canRead()) {
+                return null;
+            }
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+            }
+            return content.toString().trim();
+        } catch (Exception e) {
+            // File doesn't exist or can't be read
+            return null;
+        }
+    }
+
+    private String executeCommand(String command) {
+        StringBuilder output = new StringBuilder();
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(command);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+            // Wait for process with timeout to prevent hanging
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+            }
+            return output.toString();
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (process != null) {
+                process.destroy();
+            }
         }
     }
 }
