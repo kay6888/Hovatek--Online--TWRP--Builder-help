@@ -10,14 +10,41 @@ android {
         applicationId "com.hovatek.twrpinfo"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "2.0"
+    }
+
+    // Signing configuration for release builds
+    // To create a signed release APK:
+    // 1. Generate a keystore using: keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
+    // 2. Place the keystore file in the app directory
+    // 3. Update the values below with your keystore information
+    // 4. Build with: ./gradlew assembleRelease
+    signingConfigs {
+        release {
+            // Replace these placeholder values with your actual keystore information
+            // For security, consider using gradle.properties or environment variables instead
+            storeFile file("release-keystore.jks")  // Path to your keystore file
+            storePassword "your-store-password"      // Your keystore password
+            keyAlias "your-key-alias"                // Your key alias
+            keyPassword "your-key-password"          // Your key password
+            
+            // NOTE: The above configuration will fail if the keystore doesn't exist.
+            // For unsigned builds, comment out this signingConfigs block or run assembleDebug instead.
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            // Uncomment the line below to use the signing config when your keystore is ready
+            // signingConfig signingConfigs.release
+            
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
         }
     }
 
