@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -147,10 +148,24 @@ public class MainActivity extends AppCompatActivity {
             // Use a short timeout to avoid waiting for user interaction
             boolean completed;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                completed = process.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
+                completed = process.waitFor(1, TimeUnit.SECONDS);
             } else {
-                // For older Android, we can't set a timeout easily, so just check quickly
+                // For older Android versions, simulate timeout behavior
+                // Check if process completes within a reasonable time
+                Thread timeoutThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(1000); // 1 second timeout
+                            process.destroy();
+                        } catch (InterruptedException e) {
+                            // Timeout thread interrupted, process probably completed
+                        }
+                    }
+                });
+                timeoutThread.start();
                 process.waitFor();
+                timeoutThread.interrupt();
                 completed = true;
             }
             
@@ -173,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             reader.close();
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                process.waitFor(2, TimeUnit.SECONDS);
             } else {
                 process.waitFor();
             }
@@ -252,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
             reader.close();
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                process.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+                process.waitFor(2, TimeUnit.SECONDS);
             } else {
                 process.waitFor();
             }
@@ -648,7 +663,7 @@ public class MainActivity extends AppCompatActivity {
             }
             // Wait for process with timeout to prevent hanging
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
+                process.waitFor(5, TimeUnit.SECONDS);
             } else {
                 process.waitFor();
             }
