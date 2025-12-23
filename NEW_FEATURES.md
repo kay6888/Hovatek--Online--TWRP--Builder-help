@@ -80,7 +80,8 @@ This document describes the new features added to the TWRP Info Helper applicati
 #### Implementation Details:
 - `DeviceSearchService.java`: Manages online device searches
 - Network connectivity checking
-- AsyncTask for background operations
+- ExecutorService for background operations (modern alternative to deprecated AsyncTask)
+- Handler with Looper for main thread callbacks
 - Simple cache implementation
 - Tab-based UI using Material Design TabLayout
 
