@@ -52,7 +52,7 @@ Hovatek--Online--TWRP--Builder-help/
 │   │   ├── proguard-rules.pro               # ProGuard rules
 │   │   └── src/main/
 │   │       ├── AndroidManifest.xml          # App manifest with permissions
-│   │       ├── java/com/hovatek/twrpinfo/
+│   │       ├── java/com/pasta/twrp/
 │   │       │   └── MainActivity.java        # Main app logic (300+ lines)
 │   │       └── res/
 │   │           ├── layout/
@@ -170,7 +170,7 @@ See `BUILD_INSTRUCTIONS.md` for detailed instructions.
 
 ### Application Details
 - **Package Name**: `com.pasta.twrp`
-- **Version**: 2.1 (versionCode 3)
+- **Version**: 2.1
 - **Min SDK**: 21 (Android 5.0 Lollipop)
 - **Target SDK**: 34 (Android 14)
 - **Language**: Java
