@@ -172,7 +172,7 @@ See `BUILD_INSTRUCTIONS.md` for detailed instructions.
 - **Package Name**: `com.pasta.twrp`
 - **Version**: 2.0
 - **Min SDK**: 21 (Android 5.0 Lollipop)
-- **Target SDK**: 34 (Android 13)
+- **Target SDK**: 34 (Android 14)
 - **Language**: Java
 - **Build System**: Gradle 7.5
 - **Size**: ~500 KB (estimated)
