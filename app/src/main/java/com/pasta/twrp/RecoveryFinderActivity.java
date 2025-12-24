@@ -1,11 +1,14 @@
 package com.pasta.twrp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -20,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -30,11 +34,16 @@ import java.util.List;
 public class RecoveryFinderActivity extends AppCompatActivity {
 
     private Spinner recoveryTypeSpinner;
+    private EditText customCodenameInput;
     private Button searchButton;
     private ProgressBar progressBar;
     private LinearLayout resultsLayout;
     private ScrollView resultsScrollView;
     private TextView statusTextView;
+    private Button btnHovatekGuide;
+    private Button btnTwrpBuildGuide;
+    private Button btnQuickReference;
+    private Button btnToolsResources;
     
     private String deviceCodename = "";
     private String deviceManufacturer = "";
@@ -57,6 +66,7 @@ public class RecoveryFinderActivity extends AppCompatActivity {
         initializeViews();
         setupRecoveryTypeSpinner();
         setupSearchButton();
+        setupBuildGuideButtons();
         
         // Auto-fill device info
         TextView deviceInfoText = findViewById(R.id.deviceInfoText);
@@ -67,11 +77,16 @@ public class RecoveryFinderActivity extends AppCompatActivity {
 
     private void initializeViews() {
         recoveryTypeSpinner = findViewById(R.id.recoveryTypeSpinner);
+        customCodenameInput = findViewById(R.id.customCodenameInput);
         searchButton = findViewById(R.id.searchButton);
         progressBar = findViewById(R.id.progressBar);
         resultsLayout = findViewById(R.id.resultsLayout);
         resultsScrollView = findViewById(R.id.resultsScrollView);
         statusTextView = findViewById(R.id.statusTextView);
+        btnHovatekGuide = findViewById(R.id.btnHovatekGuide);
+        btnTwrpBuildGuide = findViewById(R.id.btnTwrpBuildGuide);
+        btnQuickReference = findViewById(R.id.btnQuickReference);
+        btnToolsResources = findViewById(R.id.btnToolsResources);
     }
 
     private void setupRecoveryTypeSpinner() {
@@ -90,15 +105,94 @@ public class RecoveryFinderActivity extends AppCompatActivity {
         });
     }
 
+    private void setupBuildGuideButtons() {
+        btnHovatekGuide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGuideFile("HOVATEK_BUILDER_GUIDE.md");
+            }
+        });
+
+        btnTwrpBuildGuide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGuideFile("TWRP_BUILDING_GUIDE.md");
+            }
+        });
+
+        btnQuickReference.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGuideFile("QUICK_REFERENCE.md");
+            }
+        });
+
+        btnToolsResources.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGuideFile("TOOLS_AND_RESOURCES.md");
+            }
+        });
+    }
+
+    private void openGuideFile(String filename) {
+        try {
+            File guideFile = new File("/sdcard/Download/twrp-guides/" + filename);
+            
+            if (guideFile.exists()) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = Uri.fromFile(guideFile);
+                intent.setDataAndType(uri, "text/*");
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(Intent.createChooser(intent, "Open guide with"));
+            } else {
+                // Fallback to online version
+                String url = "";
+                switch (filename) {
+                    case "HOVATEK_BUILDER_GUIDE.md":
+                        url = "https://www.hovatek.com/twrpbuilder/";
+                        break;
+                    case "TWRP_BUILDING_GUIDE.md":
+                        url = "https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni/blob/twrp-9.0/README.md";
+                        break;
+                    case "QUICK_REFERENCE.md":
+                        url = "https://github.com/TeamWin/Team-Win-Recovery-Project";
+                        break;
+                    case "TOOLS_AND_RESOURCES.md":
+                        url = "https://twrp.me/";
+                        break;
+                }
+                
+                if (!url.isEmpty()) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(browserIntent);
+                    Toast.makeText(this, "Opening online guide...", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error opening guide: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void searchRecoveries() {
-        if (deviceCodename == null || deviceCodename.isEmpty()) {
-            Toast.makeText(this, "Device codename not available. Please collect device info first.", 
+        // Check if custom codename is entered
+        String customCodename = customCodenameInput.getText().toString().trim();
+        
+        String searchCodename;
+        if (!customCodename.isEmpty()) {
+            searchCodename = customCodename;
+            Toast.makeText(this, "Searching for: " + customCodename, Toast.LENGTH_SHORT).show();
+        } else if (deviceCodename != null && !deviceCodename.isEmpty()) {
+            searchCodename = deviceCodename;
+        } else {
+            Toast.makeText(this, "Please enter a device codename or collect your device info first.", 
                           Toast.LENGTH_LONG).show();
             return;
         }
 
         String recoveryType = recoveryTypeSpinner.getSelectedItem().toString();
-        new SearchRecoveriesTask().execute(recoveryType);
+        new SearchRecoveriesTask(searchCodename).execute(recoveryType);
     }
 
     @Override
@@ -111,6 +205,12 @@ public class RecoveryFinderActivity extends AppCompatActivity {
     }
 
     private class SearchRecoveriesTask extends AsyncTask<String, Void, List<RecoveryResult>> {
+
+        private String searchCodename;
+
+        public SearchRecoveriesTask(String codename) {
+            this.searchCodename = codename;
+        }
 
         @Override
         protected void onPreExecute() {
@@ -149,7 +249,7 @@ public class RecoveryFinderActivity extends AppCompatActivity {
 
             if (results.isEmpty()) {
                 statusTextView.setVisibility(View.VISIBLE);
-                statusTextView.setText("No recoveries found for " + deviceCodename + 
+                statusTextView.setText("No recoveries found for " + searchCodename + 
                                      "\n\nTry:\n• Checking device codename\n• Building custom recovery yourself\n• Asking on XDA Developers");
             } else {
                 resultsScrollView.setVisibility(View.VISIBLE);
@@ -165,9 +265,9 @@ public class RecoveryFinderActivity extends AppCompatActivity {
             try {
                 String searchQuery = "";
                 if (recoveryType.equals("All Recoveries")) {
-                    searchQuery = deviceCodename + " recovery";
+                    searchQuery = searchCodename + " recovery";
                 } else {
-                    searchQuery = recoveryType + " " + deviceCodename;
+                    searchQuery = recoveryType + " " + searchCodename;
                 }
 
                 String urlString = "https://api.github.com/search/repositories?q=" + 
@@ -236,9 +336,9 @@ public class RecoveryFinderActivity extends AppCompatActivity {
             try {
                 String searchQuery = "";
                 if (recoveryType.equals("All Recoveries")) {
-                    searchQuery = deviceCodename + " recovery";
+                    searchQuery = searchCodename + " recovery";
                 } else {
-                    searchQuery = recoveryType + " " + deviceCodename;
+                    searchQuery = recoveryType + " " + searchCodename;
                 }
 
                 String urlString = "https://sourceforge.net/rest/search/projects/?q=" + 

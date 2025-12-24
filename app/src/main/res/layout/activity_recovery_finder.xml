@@ -80,6 +80,28 @@
                 android:paddingRight="12dp"
                 android:background="@drawable/search_background" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Search Other Device"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/primary_cyan" />
+
+            <EditText
+                android:id="@+id/customCodenameInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Enter device codename..."
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:background="@drawable/search_background"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:inputType="text" />
+
             <Button
                 android:id="@+id/searchButton"
                 android:layout_width="match_parent"
@@ -91,6 +113,74 @@
                 android:background="@drawable/button_primary"
                 android:textColor="@color/text_primary"
                 android:elevation="6dp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Build Guides Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/background_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📚 Build Guides"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/accent_orange" />
+
+            <Button
+                android:id="@+id/btnHovatekGuide"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:text="🌐 Hovatek Online Builder Guide"
+                android:textSize="14sp"
+                android:background="@drawable/button_primary"
+                android:textColor="@color/text_primary" />
+
+            <Button
+                android:id="@+id/btnTwrpBuildGuide"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:text="🔧 TWRP Building Guide"
+                android:textSize="14sp"
+                android:background="@drawable/button_primary"
+                android:textColor="@color/text_primary" />
+
+            <Button
+                android:id="@+id/btnQuickReference"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp"
+                android:text="📖 Quick Reference"
+                android:textSize="14sp"
+                android:background="@drawable/button_primary"
+                android:textColor="@color/text_primary" />
+
+            <Button
+                android:id="@+id/btnToolsResources"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="🛠️ Tools &amp; Resources"
+                android:textSize="14sp"
+                android:background="@drawable/button_primary"
+                android:textColor="@color/text_primary" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
