@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardBackgroundColor="@color/background_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,8 +28,8 @@
                 android:layout_weight="1"
                 android:text="Recovery Name"
                 android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#FF6200EE"
+                android:textSize="18sp"
+                android:textColor="@color/primary_cyan"
                 android:maxLines="2"
                 android:ellipsize="end" />
 
@@ -58,12 +59,12 @@
                 android:text="TWRP"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:background="#4CAF50"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
+                android:textColor="@color/text_primary"
+                android:background="@drawable/button_primary"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
                 android:layout_marginRight="8dp" />
 
             <TextView
@@ -72,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:text="GitHub"
                 android:textSize="12sp"
-                android:textColor="#666666" />
+                android:textColor="@color/text_secondary" />
 
         </LinearLayout>
 
@@ -83,21 +84,23 @@
             android:layout_height="wrap_content"
             android:text="Recovery description goes here..."
             android:textSize="14sp"
-            android:textColor="#444444"
+            android:textColor="@color/text_secondary"
             android:maxLines="3"
             android:ellipsize="end"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="12dp"
+            android:lineSpacingMultiplier="1.2" />
 
         <!-- Open Button -->
         <Button
             android:id="@+id/openButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="📥 View / Download"
             android:textStyle="bold"
-            android:backgroundTint="#FF6200EE"
-            android:textColor="#FFFFFF"
-            style="?android:attr/buttonBarButtonStyle" />
+            android:textSize="15sp"
+            android:background="@drawable/button_secondary"
+            android:textColor="@color/text_primary"
+            android:elevation="4dp" />
 
     </LinearLayout>
 

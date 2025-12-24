@@ -2,14 +2,22 @@
 <resources>
     <color name="ic_launcher_background">#3F51B5</color>
     
-    <!-- Light theme colors -->
-    <color name="background_light">#FFFFFF</color>
-    <color name="text_primary_light">#000000</color>
-    <color name="text_secondary">#666666</color>
-    <color name="search_background">#EEEEEE</color>
+    <!-- Modern Dark Theme (TWRP Blue + OrangeFox Orange) -->
+    <color name="background_dark">#1A1A1A</color>
+    <color name="background_card">#2D3748</color>
+    <color name="primary_blue">#3B82F6</color>
+    <color name="primary_cyan">#60A5FA</color>
+    <color name="accent_orange">#F97316</color>
+    <color name="accent_orange_light">#FB923C</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_hint">#64748B</color>
+    <color name="border_color">#4A5568</color>
     
-    <!-- Dark theme colors -->
-    <color name="background_dark">#121212</color>
+    <!-- Light theme colors (fallback) -->
+    <color name="background_light">#F8FAFC</color>
+    <color name="text_primary_light">#1E293B</color>
+    <color name="search_background">#E2E8F0</color>
     <color name="text_primary_dark">#FFFFFF</color>
     <color name="text_secondary_dark">#B3B3B3</color>
 </resources>

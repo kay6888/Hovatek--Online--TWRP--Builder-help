@@ -4,47 +4,75 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@drawable/gradient_background">
 
-    <TextView
+    <!-- Header Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_title"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingBottom="16dp"
-        android:textColor="#FF6200EE" />
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/background_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/app_description"
-        android:textSize="14sp"
-        android:paddingBottom="16dp"
-        android:gravity="center" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- Support Development Button -->
-    <Button
-        android:id="@+id/donationButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/support_development"
-        android:drawableStart="@android:drawable/ic_menu_help"
-        android:drawablePadding="8dp"
-        style="?android:attr/borderlessButtonStyle"
-        android:textColor="#FF6200EE"
-        android:textStyle="bold" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_title"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="@color/primary_cyan"
+                android:shadowColor="#000000"
+                android:shadowDx="0"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_description"
+                android:textSize="14sp"
+                android:paddingTop="8dp"
+                android:gravity="center"
+                android:textColor="@color/text_secondary" />
+
+            <!-- Support Development Button -->
+            <Button
+                android:id="@+id/donationButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/support_development"
+                android:drawableStart="@android:drawable/ic_menu_help"
+                android:drawablePadding="8dp"
+                android:background="@drawable/button_secondary"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:elevation="4dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Tab Layout -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
+        android:background="@drawable/card_background"
         app:tabMode="fixed"
-        app:tabGravity="fill">
+        app:tabGravity="fill"
+        app:tabTextColor="@color/text_secondary"
+        app:tabSelectedTextColor="@color/primary_cyan"
+        app:tabIndicatorColor="@color/accent_orange">
         
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -57,12 +85,14 @@
             android:text="@string/tab_search" />
     </com.google.android.material.tabs.TabLayout>
 
-    <!-- Search View (visible only when Search tab is selected) -->
+    <!-- Search View -->
     <LinearLayout
         android:id="@+id/searchLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         android:visibility="gone">
         
@@ -71,7 +101,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/search_background"
+            android:background="@drawable/search_background"
             android:queryHint="@string/search_hint" />
         
         <Button
@@ -79,41 +109,58 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/search_online"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+            android:background="@drawable/button_primary"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Filter View (visible only when My Device tab is selected) -->
+    <!-- Filter View -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/filterView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@color/search_background"
+        android:background="@drawable/search_background"
         android:queryHint="Filter device info..." />
 
+    <!-- Action Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:paddingBottom="16dp">
 
         <Button
             android:id="@+id/collectButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
             android:text="@string/collect_button"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_primary"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:elevation="6dp" />
 
         <Button
             android:id="@+id/saveButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
             android:text="@string/save_button"
             android:layout_marginStart="8dp"
-            android:enabled="true" />
+            android:background="@drawable/button_secondary"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:enabled="true"
+            android:elevation="6dp" />
     </LinearLayout>
 
     <!-- Progress indicator -->
@@ -123,33 +170,45 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
+        android:indeterminateTint="@color/primary_cyan"
         style="?android:attr/progressBarStyle" />
 
-    <ScrollView
+    <!-- Info Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/background_light"
-        android:padding="8dp">
+        android:layout_margin="16dp"
+        app:cardBackgroundColor="@color/background_card"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
 
-        <TextView
-            android:id="@+id/infoTextView"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/initial_message"
-            android:textSize="12sp"
-            android:fontFamily="monospace"
-            android:textIsSelectable="true"
-            android:textColor="?android:attr/textColorPrimary" />
-    </ScrollView>
+            android:layout_height="match_parent"
+            android:padding="16dp">
 
+            <TextView
+                android:id="@+id/infoTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/initial_message"
+                android:textSize="13sp"
+                android:fontFamily="monospace"
+                android:textIsSelectable="true"
+                android:textColor="@color/text_primary"
+                android:lineSpacingMultiplier="1.2" />
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Footer -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/footer_message"
-        android:textSize="10sp"
+        android:textSize="11sp"
         android:gravity="center"
-        android:paddingTop="8dp"
-        android:textColor="#666666" />
+        android:padding="12dp"
+        android:textColor="@color/text_hint" />
 
 </LinearLayout>
